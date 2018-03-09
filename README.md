@@ -4,7 +4,7 @@ Wibi는 Wifi CSI를 이용하여 사람의 행동일 인식하고 결과를 사�
 
 ### 2. 소개 영상
 
-<iframe width="640" height="360" src="https://www.youtube.com/embed/gVn6uMP54cw" frameborder="0" gesture="media" allowfullscreen=""></iframe>
+[TEAM MOBICOM](https://www.youtube.com/embed/gVn6uMP54cw)
 
 ### 3. 팀 소개
 
