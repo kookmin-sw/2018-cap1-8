@@ -24,7 +24,7 @@ def dataimport(path1, path2):
 		#data import by slide window
 		k = 0
 		while k <= (len(tmp1) + 1 - 2 * window_size):
-			x = np.dstack(np.array(tmp1[k:k+window_size, 1:91]).T)
+			x = np.dstack(np.array(tmp1[k:k+window_size, 1:91]).T) #매번 시작점을 바꾸는데, 시작점(start point)부터 1000개까지 자르고 시작점은 200씩 늘어난다.   1~1000 , 200~1200
 			x2 = np.concatenate((x2, x),axis=0)
 			k += slide_size
 
