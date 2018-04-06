@@ -1,4 +1,5 @@
 ### 1. 프로잭트 소개
+<img width="759" alt="screen shot 2018-04-06 at 4 21 21 pm" src="https://user-images.githubusercontent.com/17774937/38408012-b597de68-39b6-11e8-9fc3-596c817e82d8.png">
 
 Wibi는 Wifi CSI를 이용하여 사람의 행동일 인식하고 결과를 사용자에게 알려주는 시스템입니다. 두 와이파이 포인트 간에 전자파를 주고 받을 때 사용자가 두 포인트 사이에서 사람이 어떠한 행동을 하면 파동에 변화가 생기는데 이것을 채널 상태 정보(Channel State Information)이라고 합니다. 이 파동의 변화는 많은 정보를 담고 있습니다. 이 채널 상태 정보(CSI)를 분석하면 사람이 어떠한 행동을 함에 따라 각기 다른 파동의 변화가 생기는 것을 관측할 수 있습니다. 예를 들어, 걷는 행동을 할 때와 앉는 행동을 할 때의 파동의 변화를 분석하여 보면 다름을 볼 수 있습니다. 또한 이것을 이용할 수 있는 가장 큰 이유는 이 파동의 변화는 사람의 지문과 같이 각 파동의 변화마다 각각 고유한 특성을 가지고 있다는 것입니다. 이러한 파동을 분석하고 또한 머신 러닝 기법을 활용하여 학습시키면 사람의 행동이 어떤 행동인지를 거의 정확하게 파악할 수 있습니다. 그에 대한 저희는 이러한 CSI를 이용한 행동 인식 툴 개발을 목표로 합니다.
 
@@ -6,7 +7,7 @@ Wibi는 Wifi CSI를 이용하여 사람의 행동일 인식하고 결과를 사�
 
 ### 2. 소개 영상
 
-[TEAM MOBICOM](https://www.youtube.com/embed/gVn6uMP54cw)
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/gVn6uMP54cw/0.jpg)](https://www.youtube.com/watch?v=gVn6uMP54cw)
 
 ### 3. 팀 소개
 
