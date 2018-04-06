@@ -1,113 +1,228 @@
-import numpy as np,numpy
+from __future__ import print_function
+import sklearn as sk
+from sklearn.metrics import confusion_matrix
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import tensorflow as tf
+import numpy as np
+import sys
+from tensorflow.contrib import rnn
+from sklearn.model_selection import KFold, cross_val_score
 import csv
-import glob
+from sklearn.utils import shuffle
 import os
 
-window_size = 1000
+# Import WiFi Activity data
+# csv_convert(window_size,threshold)
+from cross_vali_input_data import csv_import, DataSet
+
+window_size = 500
 threshold = 60
-slide_size = 200 #less than window_size!!!
 
-def dataimport(path1, path2):
+# Parameters
+learning_rate = 0.0001
+training_iters = 2000
+batch_size = 200
+display_step = 100
 
-	xx = np.empty([0,window_size,90],float)
-	yy = np.empty([0,8],float)
+# Network Parameters
+n_input = 90 # WiFi activity data input (img shape: 90*window_size)
+n_steps = window_size # timesteps
+n_hidden = 200 # hidden layer num of features original 200
+n_classes = 7 # WiFi activity total classes
 
-	###Input data###
-	#data import from csv
-	input_csv_files = sorted(glob.glob(path1))
-	for f in input_csv_files:
-		print("input_file_name=",f)
-		data = [[ float(elm) for elm in v] for v in csv.reader(open(f, "r"))]
-		tmp1 = np.array(data)
-		x2 =np.empty([0,window_size,90],float)
+# Output folder
+OUTPUT_FOLDER_PATTERN = "LR{0}_BATCHSIZE{1}_NHIDDEN{2}/"
+output_folder = OUTPUT_FOLDER_PATTERN.format(learning_rate, batch_size, n_hidden)
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
-		#data import by slide window
-		k = 0
-		while k <= (len(tmp1) + 1 - 2 * window_size):
-			x = np.dstack(np.array(tmp1[k:k+window_size, 1:91]).T)
-			x2 = np.concatenate((x2, x),axis=0)
-			k += slide_size
+# tf Graph input
+x = tf.placeholder("float", [None, n_steps, n_input])
+y = tf.placeholder("float", [None, n_classes])
 
-		xx = np.concatenate((xx,x2),axis=0)
-	xx = xx.reshape(len(xx),-1)
+# Define weights
+weights = {
+    'out': tf.Variable(tf.random_normal([n_hidden, n_classes]))
+}
+biases = {
+    'out': tf.Variable(tf.random_normal([n_classes]))
+}
 
-	###Annotation data###
-	#data import from csv
-	annotation_csv_files = sorted(glob.glob(path2))
-	for ff in annotation_csv_files:
-		print("annotation_file_name=",ff)
-		ano_data = [[ str(elm) for elm in v] for v in csv.reader(open(ff,"r"))]
-		tmp2 = np.array(ano_data)
+def RNN(x, weights, biases):
 
-		#data import by slide window
-		y = np.zeros(((len(tmp2) + 1 - 2 * window_size)/slide_size+1,8))
-		k = 0
-		while k <= (len(tmp2) + 1 - 2 * window_size):
-			y_pre = np.stack(np.array(tmp2[k:k+window_size]))
-			bed = 0
-			fall = 0
-			walk = 0
-			pickup = 0
-			run = 0
-			sitdown = 0
-			standup = 0
-			noactivity = 0
-			for j in range(window_size):
-				if y_pre[j] == "bed":
-					bed += 1
-				elif y_pre[j] == "fall":
-					fall += 1
-				elif y_pre[j] == "walk":
-					walk += 1
-				elif y_pre[j] == "pickup":
-					pickup += 1
-				elif y_pre[j] == "run":
-					run += 1
-				elif y_pre[j] == "sitdown":
-					sitdown += 1
-				elif y_pre[j] == "standup":
-					standup += 1
-				else:
-					noactivity += 1
+    # Prepare data shape to match `rnn` function requirements
+    # Current data input shape: (batch_size, n_steps, n_input)
+    # Required shape: 'n_steps' tensors list of shape (batch_size, n_input)
 
-			if bed > window_size * threshold / 100:
-				y[k/slide_size,:] = np.array([0,1,0,0,0,0,0,0])
-			elif fall > window_size * threshold / 100:
-				y[k/slide_size,:] = np.array([0,0,1,0,0,0,0,0])
-			elif walk > window_size * threshold / 100:
-				y[k/slide_size,:] = np.array([0,0,0,1,0,0,0,0])
-			elif pickup > window_size * threshold / 100:
-				y[k/slide_size,:] = np.array([0,0,0,0,1,0,0,0])
-			elif run > window_size * threshold / 100:
-				y[k/slide_size,:] = np.array([0,0,0,0,0,1,0,0])
-			elif sitdown > window_size * threshold / 100:
-				y[k/slide_size,:] = np.array([0,0,0,0,0,0,1,0])
-			elif standup > window_size * threshold / 100:
-				y[k/slide_size,:] = np.array([0,0,0,0,0,0,0,1])
-			else:
-				y[k/slide_size,:] = np.array([2,0,0,0,0,0,0,0])
-			k += slide_size
+    # Permuting batch_size and n_steps
+    x = tf.transpose(x, [1, 0, 2])
+    # Reshaping to (n_steps*batch_size, n_input)
+    x = tf.reshape(x, [-1, n_input])
+    # Split to get a list of 'n_steps' tensors of shape (batch_size, n_input)
+    x = tf.split(x, n_steps, 0)
 
-		yy = np.concatenate((yy, y),axis=0)
-	print(xx.shape,yy.shape)
-	return (xx, yy)
+    # Define a lstm cell with tensorflow
+    lstm_cell = rnn.BasicLSTMCell(n_hidden, forget_bias=1.0)
+
+    # Get lstm cell output
+    outputs, states = rnn.static_rnn(lstm_cell, x, dtype=tf.float32)
+
+    # Linear activation, using rnn inner loop last output
+    return tf.matmul(outputs[-1], weights['out']) + biases['out']
+
+##### main #####
+pred = RNN(x, weights, biases)
+
+# Define loss and optimizer
+cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = pred, labels = y))
+optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+
+# Evaluate model
+correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
+accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
+# Initializing the variables
+init = tf.global_variables_initializer()
+cvscores = []
+confusion_sum = [[0 for i in range(7)] for j in range(7)]
+
+#data import
+x_bed, x_fall, x_pickup, x_run, x_sitdown, x_standup, x_walk, \
+y_bed, y_fall, y_pickup, y_run, y_sitdown, y_standup, y_walk = csv_import()
+
+print(" bed =",len(x_bed), " fall=", len(x_fall), " pickup =", len(x_pickup), " run=", len(x_run), " sitdown=", len(x_sitdown), " standup=", len(x_standup), " walk=", len(x_walk))
+
+#data shuffle
+x_bed, y_bed = shuffle(x_bed, y_bed, random_state=0)
+x_fall, y_fall = shuffle(x_fall, y_fall, random_state=0)
+x_pickup, y_pickup = shuffle(x_pickup, y_pickup, random_state=0)
+x_run, y_run = shuffle(x_run, y_run, random_state=0)
+x_sitdown, y_sitdown = shuffle(x_sitdown, y_sitdown, random_state=0)
+x_standup, y_standup = shuffle(x_standup, y_standup, random_state=0)
+x_walk, y_walk = shuffle(x_walk, y_walk, random_state=0)
 
 
-#### Main ####
-if not os.path.exists("input_files/"):
-        os.makedirs("input_files/")
+#k_fold
+kk = 10
 
-for i, label in enumerate (["bed", "fall", "pickup", "run", "sitdown", "standup", "walk"]):
-	filepath1 = "./Dataset/input_*" + str(label) + "*.csv"
-	filepath2 = "./Dataset/annotation_*" + str(label) + "*.csv"
-	outputfilename1 = "./input_files/xx_" + str(window_size) + "_" + str(threshold) + "_" + label + ".csv"
-	outputfilename2 = "./input_files/yy_" + str(window_size) + "_" + str(threshold) + "_" + label + ".csv"
+# Launch the graph
+with tf.Session() as sess:
+    for i in range(kk):
 
-	x, y = dataimport(filepath1, filepath2)
-	with open(outputfilename1, "w") as f:
-		writer = csv.writer(f, lineterminator="\n")
-		writer.writerows(x)
-	with open(outputfilename2, "w") as f:
-		writer = csv.writer(f, lineterminator="\n")
-		writer.writerows(y)
-	print(label + "finish!")
+        #Initialization
+        train_loss = []
+        train_acc = []
+        validation_loss = []
+        validation_acc = []
+
+        #Roll the data
+        x_bed = np.roll(x_bed, int(len(x_bed) / kk), axis=0)
+        y_bed = np.roll(y_bed, int(len(y_bed) / kk), axis=0)
+        x_fall = np.roll(x_fall, int(len(x_fall) / kk), axis=0)
+        y_fall = np.roll(y_fall, int(len(y_fall) / kk), axis=0)
+        x_pickup = np.roll(x_pickup, int(len(x_pickup) / kk), axis=0)
+        y_pickup = np.roll(y_pickup, int(len(y_pickup) / kk), axis=0)
+        x_run = np.roll(x_run, int(len(x_run) / kk), axis=0)
+        y_run = np.roll(y_run, int(len(y_run) / kk), axis=0)
+        x_sitdown = np.roll(x_sitdown, int(len(x_sitdown) / kk), axis=0)
+        y_sitdown = np.roll(y_sitdown, int(len(y_sitdown) / kk), axis=0)
+        x_standup = np.roll(x_standup, int(len(x_standup) / kk), axis=0)
+        y_standup = np.roll(y_standup, int(len(y_standup) / kk), axis=0)
+        x_walk = np.roll(x_walk, int(len(x_walk) / kk), axis=0)
+        y_walk = np.roll(y_walk, int(len(y_walk) / kk), axis=0)
+
+        #data separation
+        wifi_x_train = np.r_[x_bed[int(len(x_bed) / kk):], x_fall[int(len(x_fall) / kk):], x_pickup[int(len(x_pickup) / kk):], \
+                        x_run[int(len(x_run) / kk):], x_sitdown[int(len(x_sitdown) / kk):], x_standup[int(len(x_standup) / kk):], x_walk[int(len(x_walk) / kk):]]
+
+        wifi_y_train = np.r_[y_bed[int(len(y_bed) / kk):], y_fall[int(len(y_fall) / kk):], y_pickup[int(len(y_pickup) / kk):], \
+                        y_run[int(len(y_run) / kk):], y_sitdown[int(len(y_sitdown) / kk):], y_standup[int(len(y_standup) / kk):], y_walk[int(len(y_walk) / kk):]]
+
+        wifi_y_train = wifi_y_train[:,1:]
+
+        wifi_x_validation = np.r_[x_bed[:int(len(x_bed) / kk)], x_fall[:int(len(x_fall) / kk)], x_pickup[:int(len(x_pickup) / kk)], \
+                        x_run[:int(len(x_run) / kk)], x_sitdown[:int(len(x_sitdown) / kk)], x_standup[:int(len(x_standup) / kk)], x_walk[:int(len(x_walk) / kk)]]
+
+        wifi_y_validation = np.r_[y_bed[:int(len(y_bed) / kk)], y_fall[:int(len(y_fall) / kk)], y_pickup[:int(len(y_pickup) / kk)], \
+                        y_run[:int(len(y_run) / kk)], y_sitdown[:int(len(y_sitdown) / kk)], y_standup[:int(len(y_standup) / kk)], y_walk[:int(len(y_walk) / kk)]]
+
+        wifi_y_validation = wifi_y_validation[:,1:]
+
+        #data set
+        wifi_train = DataSet(wifi_x_train, wifi_y_train)
+        wifi_validation = DataSet(wifi_x_validation, wifi_y_validation)
+        print(wifi_x_train.shape, wifi_y_train.shape, wifi_x_validation.shape, wifi_y_validation.shape)
+        saver = tf.train.Saver()
+        sess.run(init)
+        step = 1
+
+        # Keep training until reach max iterations
+        while step < training_iters:
+            batch_x, batch_y = wifi_train.next_batch(batch_size)
+            x_vali = wifi_validation.images[:]
+            y_vali = wifi_validation.labels[:]
+            # Reshape data to get 28 seq of 28 elements
+            batch_x = batch_x.reshape((batch_size, n_steps, n_input))
+            x_vali = x_vali.reshape((-1, n_steps, n_input))
+            # Run optimization op (backprop)
+            sess.run(optimizer, feed_dict={x: batch_x, y: batch_y})
+
+            # Calculate batch accuracy
+            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y})
+            acc_vali = sess.run(accuracy, feed_dict={x: x_vali, y: y_vali})
+            # Calculate batch loss
+            loss = sess.run(cost, feed_dict={x: batch_x, y: batch_y})
+            loss_vali = sess.run(cost, feed_dict={x: x_vali, y: y_vali})
+
+            # Store the accuracy and loss
+            train_acc.append(acc)
+            train_loss.append(loss)
+            validation_acc.append(acc_vali)
+            validation_loss.append(loss_vali)
+
+            if step % display_step == 0:
+                print("Iter " + str(step) + ", Minibatch Training  Loss= " + \
+                    "{:.6f}".format(loss) + ", Training Accuracy= " + \
+                    "{:.5f}".format(acc) + ", Minibatch Validation  Loss= " + \
+                    "{:.6f}".format(loss_vali) + ", Validation Accuracy= " + \
+                    "{:.5f}".format(acc_vali) )
+            step += 1
+
+        #Calculate the confusion_matrix
+        cvscores.append(acc_vali * 100)
+        y_p = tf.argmax(pred, 1)
+        val_accuracy, y_pred = sess.run([accuracy, y_p], feed_dict={x: x_vali, y: y_vali})
+        y_true = np.argmax(y_vali,1)
+        print(sk.metrics.confusion_matrix(y_true, y_pred))
+        confusion = sk.metrics.confusion_matrix(y_true, y_pred)
+        confusion_sum = confusion_sum + confusion
+
+        #Save the Accuracy curve
+        fig = plt.figure(2 * i - 1)
+        plt.plot(train_acc)
+        plt.plot(validation_acc)
+        plt.xlabel("n_epoch")
+        plt.ylabel("Accuracy")
+        plt.legend(["train_acc","validation_acc"],loc=4)
+        plt.ylim([0,1])
+        plt.savefig((output_folder + "Accuracy_" + str(i) + ".png"), dpi=150)
+
+        #Save the Loss curve
+        fig = plt.figure(2 * i)
+        plt.plot(train_loss)
+        plt.plot(validation_loss)
+        plt.xlabel("n_epoch")
+        plt.ylabel("Loss")
+        plt.legend(["train_loss","validation_loss"],loc=1)
+        plt.ylim([0,2])
+        plt.savefig((output_folder + "Loss_" + str(i) + ".png"), dpi=150)
+
+    print("Optimization Finished!")
+    print("%.1f%% (+/- %.1f%%)" % (np.mean(cvscores), np.std(cvscores)))
+    saver.save(sess, output_folder + "model.ckpt")
+
+    #Save the confusion_matrix
+    np.savetxt(output_folder + "confusion_matrix.txt", confusion_sum, delimiter=",", fmt='%d')
+    np.savetxt(output_folder + "accuracy.txt", (np.mean(cvscores), np.std(cvscores)), delimiter=".", fmt='%.1f')
