@@ -1,4 +1,4 @@
-### 1. 프로잭트 소개
+### 1. 프로젝트 소개
 
 <img width="650" alt="screen shot 2018-04-06 at 5 06 26 pm" src="https://user-images.githubusercontent.com/17774937/38409606-fd0e015e-39bc-11e8-89d1-9d8ac85545da.png">
 
