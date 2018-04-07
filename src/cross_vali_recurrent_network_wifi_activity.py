@@ -38,9 +38,9 @@ output_folder = OUTPUT_FOLDER_PATTERN.format(learning_rate, batch_size, n_hidden
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
-# tf Graph input
-x = tf.placeholder("float", [None, n_steps, n_input])
-y = tf.placeholder("float", [None, n_classes])
+# tf Graph input // 텐서플로우 그래프에 넣어질 입력값 x, y
+x = tf.placeholder("float", [None, n_steps, n_input]) #500행(윈도우사이즈) 90열 정해지지 않은 층의 3차원 입력값
+y = tf.placeholder("float", [None, n_classes]) #7열 정해지지 않은 행의 2차원 입력값
 
 # Define weights
 weights = {
@@ -133,7 +133,7 @@ with tf.Session() as sess:
         x_walk = np.roll(x_walk, int(len(x_walk) / kk), axis=0)
         y_walk = np.roll(y_walk, int(len(y_walk) / kk), axis=0)
 
-        #data separation
+        #data separation // np.r_은 concatenate와 동일하다고 생각됨.
         wifi_x_train = np.r_[x_bed[int(len(x_bed) / kk):], x_fall[int(len(x_fall) / kk):], x_pickup[int(len(x_pickup) / kk):], \
                         x_run[int(len(x_run) / kk):], x_sitdown[int(len(x_sitdown) / kk):], x_standup[int(len(x_standup) / kk):], x_walk[int(len(x_walk) / kk):]]
 
@@ -160,17 +160,17 @@ with tf.Session() as sess:
 
         # Keep training until reach max iterations
         while step < training_iters:
-            batch_x, batch_y = wifi_train.next_batch(batch_size)
+            batch_x, batch_y = wifi_train.next_batch(batch_size) #wifi_train에 저장된 x와 y를 배치 사이즈만큼 가져옴.
             x_vali = wifi_validation.images[:]
             y_vali = wifi_validation.labels[:]
             # Reshape data to get 28 seq of 28 elements
-            batch_x = batch_x.reshape((batch_size, n_steps, n_input))
-            x_vali = x_vali.reshape((-1, n_steps, n_input))
+            batch_x = batch_x.reshape((batch_size, n_steps, n_input)) #batch_x를 500행 90열 batch_size층의 3차원으로 reshape
+            x_vali = x_vali.reshape((-1, n_steps, n_input)) #x_vail은 500행, 90열로 만들고 남은걸 배열 층으로 쌓음
             # Run optimization op (backprop)
             sess.run(optimizer, feed_dict={x: batch_x, y: batch_y})
 
             # Calculate batch accuracy
-            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y})
+            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y}) #x에 batch_x, y에 batch_y를 입력하여 accuracy 실행하여 결과값을 acc에 저장
             acc_vali = sess.run(accuracy, feed_dict={x: x_vali, y: y_vali})
             # Calculate batch loss
             loss = sess.run(cost, feed_dict={x: batch_x, y: batch_y})
@@ -193,9 +193,9 @@ with tf.Session() as sess:
         #Calculate the confusion_matrix
         cvscores.append(acc_vali * 100)
         y_p = tf.argmax(pred, 1)
-        val_accuracy, y_pred = sess.run([accuracy, y_p], feed_dict={x: x_vali, y: y_vali})
+        val_accuracy, y_pred = sess.run([accuracy, y_p], feed_dict={x: x_vali, y: y_vali}) #y_pred: 예측값 y_true: 실제값으로 추정. 1행 11열 배열
         y_true = np.argmax(y_vali,1)
-        print(sk.metrics.confusion_matrix(y_true, y_pred))
+        print(sk.metrics.confusion_matrix(y_true, y_pred)) #텐서플로우를 이용한 prediction 결과를 평가하기 위해 confusion matrix 사용
         confusion = sk.metrics.confusion_matrix(y_true, y_pred)
         confusion_sum = confusion_sum + confusion
 
