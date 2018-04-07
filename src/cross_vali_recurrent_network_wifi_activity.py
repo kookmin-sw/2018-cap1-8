@@ -170,7 +170,8 @@ with tf.Session() as sess:
             sess.run(optimizer, feed_dict={x: batch_x, y: batch_y})
 
             # Calculate batch accuracy
-            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y}) #x에 batch_x, y에 batch_y를 입력하여 accuracy 실행하여 결과값을 acc에 저장
+            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y}) 
+            #x에 batch_x, y에 batch_y를 입력하여 accuracy 실행하여 결과값을 acc에 저장
             acc_vali = sess.run(accuracy, feed_dict={x: x_vali, y: y_vali})
             # Calculate batch loss
             loss = sess.run(cost, feed_dict={x: batch_x, y: batch_y})
@@ -193,9 +194,13 @@ with tf.Session() as sess:
         #Calculate the confusion_matrix
         cvscores.append(acc_vali * 100)
         y_p = tf.argmax(pred, 1)
-        val_accuracy, y_pred = sess.run([accuracy, y_p], feed_dict={x: x_vali, y: y_vali}) #y_pred: 예측값 y_true: 실제값으로 추정. 1행 11열 배열
+        val_accuracy, y_pred = sess.run([accuracy, y_p], feed_dict={x: x_vali, y: y_vali}) 
+        #y_pred: 예측값 y_true: 실제값으로 추정. 1행 wifi_xvalidation의 z축만큼의 열을 가진 배열
         y_true = np.argmax(y_vali,1)
-        print(sk.metrics.confusion_matrix(y_true, y_pred)) #텐서플로우를 이용한 prediction 결과를 평가하기 위해 confusion matrix 사용
+        print(sk.metrics.confusion_matrix(y_true, y_pred)) 
+        #텐서플로우를 이용한 prediction 결과를 평가하기 위해 confusion matrix 사용, 결과값은 7*7의 배열
+        #열들은 예측해야하는 라벨를 나타내고, 행들은 예측한 결과의 갯수를 나타낸다.
+        #batch_size가 너무 작을 시 에러 발생.
         confusion = sk.metrics.confusion_matrix(y_true, y_pred)
         confusion_sum = confusion_sum + confusion
 
