@@ -9,8 +9,8 @@ Wibi는 Wifi CSI를 이용하여 사람의 행동일 인식하고 결과를 사�
 ### 2. 소개 영상
 
 <p>
-<a href="https://www.youtube.com/watch?v=gVn6uMP54cw"><img height="400" width="640" alt="screen shot 2018-04-06 at 4 21 21 pm" src="https://user-images.githubusercontent.com/17774937/38409260-ba1a0b3c-39bb-11e8-83bd-810e359d698b.png"/>
-  </p>
+<a href="https://www.youtube.com/watch?v=gVn6uMP54cw"><img height="400" width="640" alt="screen shot 2018-04-06 at 4 21 21 pm" src="https://user-images.githubusercontent.com/17774937/38409260-ba1a0b3c-39bb-11e8-83bd-810e359d698b.png"></a>
+ </p>
 
 ### 3. 팀 소개
 
