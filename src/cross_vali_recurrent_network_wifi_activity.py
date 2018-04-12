@@ -21,7 +21,7 @@ window_size = 500
 threshold = 60
 
 # Parameters
-learning_rate = 0.0001
+learning_rate = 0.0001  #학습의 속도에 영향. 너무 크면 학습이 overshooting해서 학습에 실패하고, 너무 작으면 더디게 진행하다가 학습이 끝나 버린다.
 training_iters = 2000
 batch_size = 200
 display_step = 100
