@@ -2,7 +2,7 @@
 ARR_1 = zeros(1,30);
 ARR_2 = zeros(1,30);
 ARR_3 = zeros(1,30);
-ARR_OUT = zeros(500,90); %% 500줄을 얻고 싶다면 zeros(500,90)
+ARR_OUT = zeros(500,90); %% 500줄을 얻고 싶다면 zeros(500,90);
 
 k = 1; %반복(iteration)을 위한 초기화
 t = 300; %특정 부분부터 잘라서 가져오고 싶을 때, 최초시작지점 선택
@@ -21,7 +21,7 @@ while(i<=30)
    
     ARR_1(i) = A(:,1,i);
     ARR_2(i) = A(:,2,i);
-    ARR_3(i) = A(:,2,i);
+    ARR_3(i) = A(:,3,i);
     i = i + 1;
     
 end
