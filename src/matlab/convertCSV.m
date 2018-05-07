@@ -2,10 +2,10 @@
 ARR_1 = zeros(1,30);
 ARR_2 = zeros(1,30);
 ARR_3 = zeros(1,30);
-ARR_OUT = zeros(500,90); %% 500ÁÙÀ» ¾ò°í ½Í´Ù¸é zeros(500,90)
+ARR_OUT = zeros(500,90); %% 500ì¤„ì„ ì–»ê³  ì‹¶ë‹¤ë©´ zeros(500,90)
 
-k = 1; %¹Ýº¹(iteration)À» À§ÇÑ ÃÊ±âÈ­
-t = 300; %Æ¯Á¤ ºÎºÐºÎÅÍ Àß¶ó¼­ °¡Á®¿À°í ½ÍÀ» ¶§, ÃÖÃÊ½ÃÀÛÁöÁ¡ ¼±ÅÃ
+k = 1; %ë°˜ë³µ(iteration)ì„ ìœ„í•œ ì´ˆê¸°í™”
+t = 300; %íŠ¹ì • ë¶€ë¶„ë¶€í„° ìž˜ë¼ì„œ ê°€ì ¸ì˜¤ê³  ì‹¶ì„ ë•Œ, ìµœì´ˆì‹œìž‘ì§€ì  ì„ íƒ
 
 while(k <= 500)
 csi_trace = read_bf_file('C:\Users\ACA\Documents\MATLAB\matlab\real_data\standing10.data');
@@ -26,7 +26,7 @@ while(i<=30)
     
 end
 
-ARR_FINAL = [ARR_1,ARR_2,ARR_3]; %ÇÕÄ¡±â
+ARR_FINAL = [ARR_1,ARR_2,ARR_3]; %í•©ì¹˜ê¸°
 ARR_OUT(k,:) = ARR_FINAL;
 
 disp(k);
