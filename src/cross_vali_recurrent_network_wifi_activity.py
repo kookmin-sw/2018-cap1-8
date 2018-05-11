@@ -22,15 +22,15 @@ threshold = 60
 
 # Parameters
 learning_rate = 0.0001  #학습의 속도에 영향. 너무 크면 학습이 overshooting해서 학습에 실패하고, 너무 작으면 더디게 진행하다가 학습이 끝나 버린다.
-training_iters = 2000
-batch_size = 200
+training_iters = 2000 #학습반복횟수
+batch_size = 200 #한번에 사용할 데이터의 양. (200개의 데이터가 하나의 batch로 취급된다)
 display_step = 100
 
 # Network Parameters
-n_input = 90 # WiFi activity data input (img shape: 90*window_size)
-n_steps = window_size # timesteps
-n_hidden = 200 # hidden layer num of features original 200
-n_classes = 7 # WiFi activity total classes
+n_input = 90 # WiFi activity data input (img shape: 90*window_size) , RNN의 데이터 가로줄 사이즈
+n_steps = window_size # RNN의 데이터 세로줄 사이즈
+n_hidden = 200 # hidden layer num of features original 200 , 히든레이어 갯수
+n_classes = 7 # WiFi activity total classes , One-hot encoding 방식의 7개의 클래스
 
 # Output folder
 OUTPUT_FOLDER_PATTERN = "LR{0}_BATCHSIZE{1}_NHIDDEN{2}/"
@@ -64,23 +64,23 @@ def RNN(x, weights, biases):
     x = tf.split(x, n_steps, 0)
 
     # Define a lstm cell with tensorflow
-    lstm_cell = rnn.BasicLSTMCell(n_hidden, forget_bias=1.0)
+    lstm_cell = rnn.BasicLSTMCell(n_hidden, forget_bias=1.0) #RNN을 위한 셀을 만드는 텐서플로 메소드
 
     # Get lstm cell output
-    outputs, states = rnn.static_rnn(lstm_cell, x, dtype=tf.float32)
+    outputs, states = rnn.static_rnn(lstm_cell, x, dtype=tf.float32) #셀을 이용해 RNN을 돌려 OUTPUT을 만드는 메소드.
 
     # Linear activation, using rnn inner loop last output
-    return tf.matmul(outputs[-1], weights['out']) + biases['out']
+    return tf.matmul(outputs[-1], weights['out']) + biases['out']    # y = x * W + b
 
 ##### main #####
 pred = RNN(x, weights, biases)
 
 # Define loss and optimizer
-+cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = pred, labels = y)) #cost는 학습의 오차율을 나타내는 것으로 보이며, 오차율을 감소시키기 위해 optimizer의 tf.train,AdamOptimizer을 사용하는것으로 보임
- +optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost) 
- +#tf,train.AdamOptimizer(Learning late = 학습속도).minimize(cost = 로스율)    minimize의 첫 번째 인자는 loss이며 cost가 들어간다.
- +#https://www.tensorflow.org/api_docs/python/tf/train/AdamOptimizer
-
+cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = pred, labels = y)) #cost는 학습의 오차율을 나타내는 것으로 보이며, 오차율을 감소시키기 위해 optimizer의 tf.train,AdamOptimizer을 사용하는것으로 보임
+optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost) #레이블 역할을 하는 Y와 예측값을 비교해서 , 오차를 측정하고 오차율을 감소시킨다.
+#tf,train.AdamOptimizer(Learning late = 학습속도).minimize(cost = 로스율)    minimize의 첫 번째 인자는 loss이며 cost가 들어간다.
+#https://www.tensorflow.org/api_docs/python/tf/train/AdamOptimizer
+#AdamOptimizer는 오차를 감소시키기 위한 텐서플로 함수의 일종
 # Evaluate model
 correct_pred = tf.equal(tf.argmax(pred,1), tf.argmax(y,1))
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
@@ -172,7 +172,7 @@ with tf.Session() as sess:
             sess.run(optimizer, feed_dict={x: batch_x, y: batch_y})
 
             # Calculate batch accuracy
-            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y}) 
+            acc = sess.run(accuracy, feed_dict={x: batch_x, y: batch_y})
             #x에 batch_x, y에 batch_y를 입력하여 accuracy 실행하여 결과값을 acc에 저장
             acc_vali = sess.run(accuracy, feed_dict={x: x_vali, y: y_vali})
             # Calculate batch loss
@@ -196,10 +196,10 @@ with tf.Session() as sess:
         #Calculate the confusion_matrix
         cvscores.append(acc_vali * 100)
         y_p = tf.argmax(pred, 1)
-        val_accuracy, y_pred = sess.run([accuracy, y_p], feed_dict={x: x_vali, y: y_vali}) 
+        val_accuracy, y_pred = sess.run([accuracy, y_p], feed_dict={x: x_vali, y: y_vali})
         #y_pred: 예측값 y_true: 실제값으로 추정. 1행 wifi_xvalidation의 z축만큼의 열을 가진 배열
         y_true = np.argmax(y_vali,1)
-        print(sk.metrics.confusion_matrix(y_true, y_pred)) 
+        print(sk.metrics.confusion_matrix(y_true, y_pred))
         #텐서플로우를 이용한 prediction 결과를 평가하기 위해 confusion matrix 사용, 결과값은 7*7의 배열
         #열들은 예측해야하는 라벨를 나타내고, 행들은 예측한 결과의 갯수를 나타낸다.
         #batch_size가 너무 작을 시 에러 발생.
