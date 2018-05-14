@@ -179,7 +179,7 @@ with tf.Session() as sess:
         sess.run(tf.initialize_all_variables())
         ckpt = tf.train.get_checkpoint_state('model')
         if ckpt and ckpt.model_checkpoint_path:
-            saver.restore(sess, 'LR0.0001_BATCHSIZE200_NHIDDEN200/model.ckpt')
+            saver.restore(sess, 'model/model.ckpt')
 
         step = 1
 
