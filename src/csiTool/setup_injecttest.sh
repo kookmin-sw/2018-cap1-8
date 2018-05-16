@@ -35,3 +35,5 @@ do
 done  
   
 iw mon0 set channel $chn $bw
+
+sudo echo 0x4101 |sudo tee /sys/kernel/debug/ieee80211/phy0/iwlwifi/iwldvm/debug/monitor_tx_rate
