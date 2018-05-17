@@ -55,6 +55,10 @@ def dataimport(path1, path2):
 					stand += 1
 				elif y_pre[j] == "empty":
 					empty += 1
+				elif y_pre[j] == "sit":
+					sit += 1
+				elif y_pre[j] == "handup":
+					handup += 1
 
 			if walk > window_size * threshold / 100:
 				y[k // slide_size, :] = np.array([0, 1, 0, 0, 0, 0])
