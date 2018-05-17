@@ -114,7 +114,7 @@ kk = 10
 
 # Launch the graph
 with tf.Session() as sess:
-    for i in range(kk-8):
+    for i in range(kk):
 
         #Initialization
         train_loss = []
