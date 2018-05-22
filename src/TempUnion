@@ -1,0 +1,63 @@
+import matlab.engine
+import csv
+
+import time
+from time import strftime
+
+start_time = time.time()
+eng = matlab.engine.start_matlab()
+#eng.Untitled(nargout=0)
+#ARR_1 = eng.zeros(1,30);
+#ARR_2 = eng.zeros(1,30);
+#ARR_3 = eng.zeros(1,30);
+ARR_OUT = eng.zeros(4900,90);
+time_csi_trace = time.time()
+k = 1; #%반복(iteration)을 위한 초기화
+t = 1; #%특정 부분부터 잘라서 가져오고 싶을 때, 최초시작지점 선택
+csi_trace = eng.read_bf_file('C:/Users/ACA/PycharmProjects/UnionProject/2018_05_09_walk10_04_delay1000.dat');
+time_csi_trace_end = time.time() - time_csi_trace
+time_k_while = time.time()
+while(k<4900):
+    csi_entry = csi_trace[t]
+    csi = eng.get_scaled_csi(csi_entry)
+    A = eng.abs(csi);
+
+    i = 0;
+    ARR_FINAL = []
+    ARR_1 = []
+    ARR_2 = []
+    ARR_3 = []
+    time_i_while = time.time()
+    while (i < 30):
+
+        ARR_1.append(A[0][0][i])
+        ARR_2.append(A[0][1][i])
+        ARR_3.append(A[0][2][i])
+        #ARR_2[i] = A[:, 2, i];
+        #ARR_3[i] = A[:, 3, i];
+
+
+    #print(ARR_1)
+    #print(ARR_2  i = i + 1;)
+    #print(ARR_3)
+
+    ARR_FINAL = [ARR_1, ARR_2, ARR_3]; #% 합치기
+    time_i_while_end = time.time() - time_i_while;
+    k = k + 1
+    t = t + 1
+
+
+time_k_while_end = time.time() - time_k_while
+f = open('./test.csv','w')
+csvWriter = csv.writer(f)
+
+csvWriter.writerow(ARR_FINAL)
+f.close()
+end_time = time.time() - start_time
+
+print("으아아아가")
+print(end_time)
+print(time_csi_trace_end)
+print(time_k_while_end)
+print(time_i_while_end)
+
