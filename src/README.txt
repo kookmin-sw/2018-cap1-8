@@ -44,6 +44,11 @@ sudo ./ Link\ to\ random_packets (총 패킷량) (한번에 보낼 패킷량) 1 
 setup_monitor_csitest.sh가 있는 폴더에서 sudo bash setup_monitor_csitest.sh
 Supplementary/netlink 에서 sudo ./log_to_file (파일명)
 
+4. 실행 방법
+- new train으로 학습을 시켜 모델 파일 생성.
+- csi tool Matlab utility 파일이 예측 실행 파일과 같은 폴더에 존재하도록 위치.
+- 
+
  
 
 

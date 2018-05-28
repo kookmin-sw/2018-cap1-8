@@ -24,7 +24,7 @@ def make_fig():
         plt.title("?")
 
 eng = matlab.engine.start_matlab()
-saver = tf.train.import_meta_graph('../learning2/model.ckpt.meta')
+saver = tf.train.import_meta_graph('../model/model.ckpt.meta')
 graph = tf.get_default_graph()
 x = graph.get_tensor_by_name("Placeholder:0")
 pred = graph.get_tensor_by_name("add:0")
@@ -35,7 +35,7 @@ act = ["Walk", "Stand", "Empty", "Sit down", "Stand up"]
 while 1:
     k = 1
     t = 0
-    csi_trace = eng.read_bf_file('C:/Users/user/Documents/data/walk/walk_04/2018_05_09_walk10_04_delay1000.dat')
+    csi_trace = eng.read_bf_file('/home/kjlee/linux-80211n-csitool-supplementary/netlink/test.dat')
     if len(csi_trace) < 500:
         continue
     ARR_FINAL = np.empty([0, 90], float)
@@ -61,8 +61,8 @@ while 1:
         t = t + 1
     xx[0] = ARR_FINAL
 
-    with tf.Session() as sess:
-        saver.restore(sess, '../learning2/model.ckpt')
+    with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
+        saver.restore(sess, '../model/model.ckpt')
         n = pred.eval(feed_dict={x: xx})
         n2 = tf.argmax(n, 1)
         result = n2.eval()
