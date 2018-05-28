@@ -4,11 +4,24 @@ import matlab.engine
 import matplotlib.pyplot as plt
 from drawnow import drawnow
 def make_fig():
-    plt.xlim(0, 15000)
+    plt.xlim(0, 1000)
     plt.ylim(0, 40)
-    plt.plot(b, xx1, color='red')
-    plt.plot(b, yy1, color='blue')
-    plt.plot(b, zz1, color='yellow')
+    plt.plot(b, xx1, color='red', alpha = 0.5)
+    plt.plot(b, yy1, color='blue', alpha = 0.5)
+    plt.plot(b, zz1, color='green', alpha = 0.5)
+    plt.ylabel("Amplitude")
+    if (result == 0):
+        plt.title("Walk")
+    elif (result == 1):
+        plt.title("Stand")
+    elif (result == 2):
+        plt.title("Empty")
+    elif (result == 3):
+        plt.title("Sit down")
+    elif (result == 4):
+        plt.title("Stand up")
+    else:
+        plt.title("?")
 
 eng = matlab.engine.start_matlab()
 saver = tf.train.import_meta_graph('../learning2/model.ckpt.meta')
@@ -18,11 +31,13 @@ pred = graph.get_tensor_by_name("add:0")
 plt.ion()
 plt.figure(0)
 b = np.arange(0, 15000)
+act = ["Walk", "Stand", "Empty", "Sit down", "Stand up"]
 while 1:
     k = 1
     t = 0
-    h = 0
     csi_trace = eng.read_bf_file('C:/Users/user/Documents/data/walk/walk_04/2018_05_09_walk10_04_delay1000.dat')
+    if len(csi_trace) < 500:
+        continue
     ARR_FINAL = np.empty([0, 90], float)
     xx = np.empty([1, 500, 90], float)
     xx1 = np.empty([0], float)
@@ -44,16 +59,14 @@ while 1:
         ARR_FINAL = np.vstack((ARR_FINAL, ARR_OUT))
         k = k + 1
         t = t + 1
-        h = h + 30
     xx[0] = ARR_FINAL
-    drawnow(make_fig)
 
     with tf.Session() as sess:
         saver.restore(sess, '../learning2/model.ckpt')
         n = pred.eval(feed_dict={x: xx})
         n2 = tf.argmax(n, 1)
         result = n2.eval()
-        print("walk stand empty sit handup")
-        print(result)
+        drawnow(make_fig)
+        print(act[int(result)])
 
         sess.close()
