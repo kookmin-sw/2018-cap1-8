@@ -9,7 +9,7 @@ slide_size = 200 #less than window_size!!!
 
 def dataimport(path1, path2):
 	xx = np.empty([0,window_size,90],float)
-	yy = np.empty([0, 6], float) # given matrix is a number of class 
+	yy = np.empty([0, 6], float)
 
 	###Input data###
 	#data import from csv
@@ -39,39 +39,39 @@ def dataimport(path1, path2):
 		tmp2 = np.array(ano_data)
 
 		#data import by slide window
-		y = np.zeros(((len(tmp2) + 1 - 2 * window_size)//slide_size+1,6)) # the last parameter should be the number of class
+		y = np.zeros(((len(tmp2) + 1 - 2 * window_size)//slide_size+1,6))
 		k = 0
 		while k <= (len(tmp2) + 1 - 2 * window_size):
 			y_pre = np.stack(np.array(tmp2[k:k+window_size]))
-			walk =0 #modified
+			walk =0
 			stand = 0
 			empty = 0
 			sit = 0
-			handup = 0
+			standup = 0
 			for j in range(window_size):
-				if y_pre[j] == "walk": #modified
+				if y_pre[j] == "walk":
 					walk += 1
-				elif y_pre[j] == "stand": #modified
+				elif y_pre[j] == "stand":
 					stand += 1
-				elif y_pre[j] == "empty": #modified
+				elif y_pre[j] == "empty":
 					empty += 1
-				elif y_pre[j] == "sit": #modified
+				elif y_pre[j] == "sit":
 					sit += 1
-				elif y_pre[j] == "handup": #modified - handup might need to be obmitted in the future
-					handup += 1
+				elif y_pre[j] == "standup":
+					standup += 1
 
-			if walk > window_size * threshold / 100: #modified
+			if walk > window_size * threshold / 100:
 				y[k // slide_size, :] = np.array([0, 1, 0, 0, 0, 0])
-			elif stand > window_size * threshold / 100: #modified
+			elif stand > window_size * threshold / 100:
 				y[k // slide_size, :] = np.array([0, 0, 1, 0, 0, 0])
-			elif empty > window_size * threshold / 100: #modified
+			elif empty > window_size * threshold / 100:
 				y[k // slide_size, :] = np.array([0, 0, 0, 1, 0, 0])
-			elif sit > window_size * threshold / 100: #modified
+			elif sit > window_size * threshold / 100:
 				y[k // slide_size, :] = np.array([0, 0, 0, 0, 1, 0])
-			elif handup > window_size * threshold / 100: #modified - handup might need to be obmitted in the future
+			elif standup > window_size * threshold / 100:
 				y[k // slide_size, :] = np.array([0, 0, 0, 0, 0, 1])
 			else:
-				y[k//slide_size,:] = np.array([2,0,0,0,0,0]) # should not be deleted
+				y[k//slide_size,:] = np.array([2,0,0,0,0,0])
 			k += slide_size
 		yy = np.concatenate((yy, y),axis=0)
 	print(xx.shape,yy.shape)
@@ -82,7 +82,7 @@ def dataimport(path1, path2):
 if not os.path.exists("input_files/"):
 	os.makedirs("input_files/")
 
-for i, label in enumerate (["walk", "stand", "empty", "sit", "handup"]): #modified - handup might need to be obmitted in the future
+for i, label in enumerate (["walk", "stand", "empty", "sit", "standup"]):   #(["bed", "fall", "pickup", "run", "sitdown", "standup", "walk"]):
 	filepath1 = "./Dataset/2018_*" + str(label) + "*.csv"
 	filepath2 = "./Dataset/annotation_*" + str(label) + "*.csv"
 	outputfilename1 = "./input_files/xx_" + str(window_size) + "_" + str(threshold) + "_" + label + ".csv"

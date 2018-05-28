@@ -93,17 +93,17 @@ confusion_sum = [[0 for i in range(5)] for j in range(5)]
 #data import
 #x_walk, x_stand, x_pickup, x_run, x_sitdown, x_standup, x_walk, \
 #y_walk, y_stand, y_pickup, y_run, y_sitdown, y_standup, y_walk = csv_import()
-x_walk, x_stand, x_empty, x_sit, x_handup, y_walk, y_stand, y_empty, y_sit, y_handup = csv_import()
+x_walk, x_stand, x_empty, x_sit, x_standup, y_walk, y_stand, y_empty, y_sit, y_standup = csv_import()
 
 #print(" walk =",len(x_walk), " stand=", len(x_stand), " pickup =", len(x_pickup), " run=", len(x_run), " sitdown=", len(x_sitdown), " standup=", len(x_standup), " walk=", len(x_walk))
-print(" walk =",len(x_walk), " stand=", len(x_stand), " empty=", len(x_empty), " sit=", len(x_sit), " handup=", len(x_handup))
+print(" walk =",len(x_walk), " stand=", len(x_stand), " empty=", len(x_empty), " sit=", len(x_sit), " standup=", len(x_standup))
 
 #data shuffle
 x_walk, y_walk = shuffle(x_walk, y_walk, random_state=0)
 x_stand, y_stand = shuffle(x_stand, y_stand, random_state=0)
 x_empty, y_empty = shuffle(x_empty, y_empty, random_state=0)
 x_sit, y_sit = shuffle(x_sit, y_sit, random_state=0)
-x_handup, y_handup = shuffle(x_handup, y_handup, random_state=0)
+x_standup, y_standup = shuffle(x_standup, y_standup, random_state=0)
 #x_pickup, y_pickup = shuffle(x_pickup, y_pickup, random_state=0)
 #x_run, y_run = shuffle(x_run, y_run, random_state=0)
 #x_sitdown, y_sitdown = shuffle(x_sitdown, y_sitdown, random_state=0)
@@ -116,7 +116,7 @@ kk = 10
 
 # Launch the graph
 with tf.Session() as sess:
-    for i in range(kk-8):
+    for i in range(kk):
 
         #Initialization
         train_loss = []
@@ -133,8 +133,8 @@ with tf.Session() as sess:
         y_empty = np.roll(y_empty, int(len(y_empty) // kk), axis=0)
         x_sit = np.roll(x_sit, int(len(x_sit) // kk), axis=0)
         y_sit = np.roll(y_sit, int(len(y_sit) // kk), axis=0)
-        x_handup = np.roll(x_handup, int(len(x_handup) // kk), axis=0)
-        y_handup = np.roll(y_handup, int(len(y_handup) // kk), axis=0)
+        x_standup = np.roll(x_standup, int(len(x_standup) // kk), axis=0)
+        y_standup = np.roll(y_standup, int(len(y_standup) // kk), axis=0)
 
         #x_pickup = np.roll(x_pickup, int(len(x_pickup) / kk), axis=0)
         #y_pickup = np.roll(y_pickup, int(len(y_pickup) / kk), axis=0)
@@ -164,15 +164,15 @@ with tf.Session() as sess:
 
         #wifi_y_validation = wifi_y_validation[:,1:]
 
-        wifi_x_train = np.r_[x_walk[int(len(x_walk) // kk):], x_stand[int(len(x_stand) // kk):], x_empty[int(len(x_empty) // kk):], x_sit[int(len(x_sit) // kk):], x_handup[int(len(x_handup) // kk):]]
+        wifi_x_train = np.r_[x_walk[int(len(x_walk) // kk):], x_stand[int(len(x_stand) // kk):], x_empty[int(len(x_empty) // kk):], x_sit[int(len(x_sit) // kk):], x_standup[int(len(x_standup) // kk):]]
 
-        wifi_y_train = np.r_[y_walk[int(len(y_walk) // kk):], y_stand[int(len(y_stand) // kk):], y_empty[int(len(y_empty) // kk):], y_sit[int(len(y_sit) // kk):], y_handup[int(len(y_handup) // kk):]]
+        wifi_y_train = np.r_[y_walk[int(len(y_walk) // kk):], y_stand[int(len(y_stand) // kk):], y_empty[int(len(y_empty) // kk):], y_sit[int(len(y_sit) // kk):], y_standup[int(len(y_standup) // kk):]]
 
         wifi_y_train = wifi_y_train[:,1:]
 
-        wifi_x_validation = np.r_[x_walk[:int(len(x_walk) // kk)], x_stand[:int(len(x_stand) // kk)], x_empty[:int(len(x_empty) // kk)], x_sit[:int(len(x_sit) // kk)], x_handup[:int(len(x_handup) // kk)]]
+        wifi_x_validation = np.r_[x_walk[:int(len(x_walk) // kk)], x_stand[:int(len(x_stand) // kk)], x_empty[:int(len(x_empty) // kk)], x_sit[:int(len(x_sit) // kk)], x_standup[:int(len(x_standup) // kk)]]
 
-        wifi_y_validation = np.r_[y_walk[:int(len(y_walk) // kk)], y_stand[:int(len(y_stand) // kk)], y_empty[:int(len(y_empty) // kk)], y_sit[:int(len(y_sit) // kk)], y_handup[:int(len(y_handup) // kk)]]
+        wifi_y_validation = np.r_[y_walk[:int(len(y_walk) // kk)], y_stand[:int(len(y_stand) // kk)], y_empty[:int(len(y_empty) // kk)], y_sit[:int(len(y_sit) // kk)], y_standup[:int(len(y_standup) // kk)]]
 
         wifi_y_validation = wifi_y_validation[:,1:]
 
