@@ -54,12 +54,8 @@ def csv_import():
     y_dic = {}
     print("csv file importing...")
 
-    for i in ["walk", "stand", "empty", "sit", "standup"]:
-#        xx = np.array([[ float(elm) for elm in v] for v in csv.reader(open("./input_files/xx_1000_60_" + str(i) + ".csv","r"))])
-#        yy = np.array([[ float(elm) for elm in v] for v in csv.reader(open("./input_files/yy_1000_60_" + str(i) + ".csv","r"))])
+    for i in ["walk", "stand", "empty", "sitdown", "up"]: #modified
 
-#        xx = xx[::2,:]
-#        yy = yy[::2,:]
 
         SKIPROW = 2 #Skip every 2 rows -> overlap 800ms to 600ms  (To avoid memory error)
         num_lines = sum(1 for l in open("./input_files/xx_1000_60_" + str(i) + ".csv"))
@@ -68,10 +64,6 @@ def csv_import():
         xx = np.array(pd.read_csv("./input_files/xx_1000_60_" + str(i) + ".csv", header=None, skiprows = skip_idx))
         yy = np.array(pd.read_csv("./input_files/yy_1000_60_" + str(i) + ".csv", header=None, skiprows = skip_idx))
 
-        # eliminate the NoActivity Data
-        #rows, cols = np.where(yy>0)
-        #xx = np.delete(xx, rows[ np.where(cols==0)],0)
-        #yy = np.delete(yy, rows[ np.where(cols==0)],0)
 
         xx = xx.reshape(len(xx),1000,90)
 
@@ -83,5 +75,6 @@ def csv_import():
 
         print(str(i), "finished...", "xx=", xx.shape, "yy=",  yy.shape)
 
-    return x_dic["walk"], x_dic["stand"], x_dic["empty"], x_dic["sit"], x_dic["standup"], \
-        y_dic["walk"], y_dic["stand"], y_dic["empty"], y_dic["sit"], y_dic["standup"]
+    return x_dic["walk"], x_dic["stand"], x_dic["empty"], x_dic["sitdown"], x_dic["up"],\
+        y_dic["walk"], y_dic["stand"], y_dic["empty"], y_dic["sitdown"], y_dic["up"]
+        # modified - might need to obmit up in the future

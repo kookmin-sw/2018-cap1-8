@@ -12,11 +12,14 @@ from sklearn.model_selection import KFold, cross_val_score
 import csv
 from sklearn.utils import shuffle
 import os
+import time
 
 # Import WiFi Activity data
 # csv_convert(window_size,threshold)
 from fix_cross_vali_input_data import csv_import, DataSet
 
+
+FULL_TIME_START = time.time()
 window_size = 500
 threshold = 60
 
@@ -93,17 +96,17 @@ confusion_sum = [[0 for i in range(5)] for j in range(5)]
 #data import
 #x_walk, x_stand, x_pickup, x_run, x_sitdown, x_standup, x_walk, \
 #y_walk, y_stand, y_pickup, y_run, y_sitdown, y_standup, y_walk = csv_import()
-x_walk, x_stand, x_empty, x_sit, x_standup, y_walk, y_stand, y_empty, y_sit, y_standup = csv_import()
+x_walk, x_stand, x_empty, x_sitdown, x_up, y_walk, y_stand, y_empty, y_sitdown, y_up = csv_import()
 
 #print(" walk =",len(x_walk), " stand=", len(x_stand), " pickup =", len(x_pickup), " run=", len(x_run), " sitdown=", len(x_sitdown), " standup=", len(x_standup), " walk=", len(x_walk))
-print(" walk =",len(x_walk), " stand=", len(x_stand), " empty=", len(x_empty), " sit=", len(x_sit), " standup=", len(x_standup))
+print(" walk =",len(x_walk), " stand=", len(x_stand), " empty=", len(x_empty), " sitdown=", len(x_sitdown), " up=", len(x_up))
 
 #data shuffle
 x_walk, y_walk = shuffle(x_walk, y_walk, random_state=0)
 x_stand, y_stand = shuffle(x_stand, y_stand, random_state=0)
 x_empty, y_empty = shuffle(x_empty, y_empty, random_state=0)
-x_sit, y_sit = shuffle(x_sit, y_sit, random_state=0)
-x_standup, y_standup = shuffle(x_standup, y_standup, random_state=0)
+x_sitdown, y_sitdown = shuffle(x_sitdown, y_sitdown, random_state=0)
+x_up, y_up = shuffle(x_up, y_up, random_state=0)
 #x_pickup, y_pickup = shuffle(x_pickup, y_pickup, random_state=0)
 #x_run, y_run = shuffle(x_run, y_run, random_state=0)
 #x_sitdown, y_sitdown = shuffle(x_sitdown, y_sitdown, random_state=0)
@@ -115,9 +118,10 @@ x_standup, y_standup = shuffle(x_standup, y_standup, random_state=0)
 kk = 10
 
 # Launch the graph
-with tf.Session() as sess:
+with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
     for i in range(kk):
 
+        TRAIN_1KK_START = time.time()
         #Initialization
         train_loss = []
         train_acc = []
@@ -131,10 +135,10 @@ with tf.Session() as sess:
         y_stand = np.roll(y_stand, int(len(y_stand) // kk), axis=0)
         x_empty = np.roll(x_empty, int(len(x_empty) // kk), axis=0)
         y_empty = np.roll(y_empty, int(len(y_empty) // kk), axis=0)
-        x_sit = np.roll(x_sit, int(len(x_sit) // kk), axis=0)
-        y_sit = np.roll(y_sit, int(len(y_sit) // kk), axis=0)
-        x_standup = np.roll(x_standup, int(len(x_standup) // kk), axis=0)
-        y_standup = np.roll(y_standup, int(len(y_standup) // kk), axis=0)
+        x_sitdown = np.roll(x_sitdown, int(len(x_sitdown) // kk), axis=0)
+        y_sitdown = np.roll(y_sitdown, int(len(y_sitdown) // kk), axis=0)
+        x_up = np.roll(x_up, int(len(x_up) // kk), axis=0)
+        y_up = np.roll(y_up, int(len(y_up) // kk), axis=0)
 
         #x_pickup = np.roll(x_pickup, int(len(x_pickup) / kk), axis=0)
         #y_pickup = np.roll(y_pickup, int(len(y_pickup) / kk), axis=0)
@@ -164,15 +168,15 @@ with tf.Session() as sess:
 
         #wifi_y_validation = wifi_y_validation[:,1:]
 
-        wifi_x_train = np.r_[x_walk[int(len(x_walk) // kk):], x_stand[int(len(x_stand) // kk):], x_empty[int(len(x_empty) // kk):], x_sit[int(len(x_sit) // kk):], x_standup[int(len(x_standup) // kk):]]
+        wifi_x_train = np.r_[x_walk[int(len(x_walk) // kk):], x_stand[int(len(x_stand) // kk):], x_empty[int(len(x_empty) // kk):], x_sitdown[int(len(x_sitdown) // kk):], x_up[int(len(x_up) // kk):]]
 
-        wifi_y_train = np.r_[y_walk[int(len(y_walk) // kk):], y_stand[int(len(y_stand) // kk):], y_empty[int(len(y_empty) // kk):], y_sit[int(len(y_sit) // kk):], y_standup[int(len(y_standup) // kk):]]
+        wifi_y_train = np.r_[y_walk[int(len(y_walk) // kk):], y_stand[int(len(y_stand) // kk):], y_empty[int(len(y_empty) // kk):], y_sitdown[int(len(y_sitdown) // kk):], y_up[int(len(y_up) // kk):]]
 
         wifi_y_train = wifi_y_train[:,1:]
 
-        wifi_x_validation = np.r_[x_walk[:int(len(x_walk) // kk)], x_stand[:int(len(x_stand) // kk)], x_empty[:int(len(x_empty) // kk)], x_sit[:int(len(x_sit) // kk)], x_standup[:int(len(x_standup) // kk)]]
+        wifi_x_validation = np.r_[x_walk[:int(len(x_walk) // kk)], x_stand[:int(len(x_stand) // kk)], x_empty[:int(len(x_empty) // kk)], x_sitdown[:int(len(x_sitdown) // kk)], x_up[:int(len(x_up) // kk)]]
 
-        wifi_y_validation = np.r_[y_walk[:int(len(y_walk) // kk)], y_stand[:int(len(y_stand) // kk)], y_empty[:int(len(y_empty) // kk)], y_sit[:int(len(y_sit) // kk)], y_standup[:int(len(y_standup) // kk)]]
+        wifi_y_validation = np.r_[y_walk[:int(len(y_walk) // kk)], y_stand[:int(len(y_stand) // kk)], y_empty[:int(len(y_empty) // kk)], y_sitdown[:int(len(y_sitdown) // kk)], y_up[:int(len(y_up) // kk)]]
 
         wifi_y_validation = wifi_y_validation[:,1:]
 
@@ -191,6 +195,7 @@ with tf.Session() as sess:
 
         # Keep training until reach max iterations
         while step < training_iters:
+            TRAIN_ITER_100TIMES_START = time.time()
             batch_x, batch_y = wifi_train.next_batch(batch_size) #wifi_train에 저장된 x와 y를 배치 사이즈만큼 가져옴.
             x_vali = wifi_validation.images[:]
             y_vali = wifi_validation.labels[:]
@@ -220,6 +225,7 @@ with tf.Session() as sess:
                     "{:.5f}".format(acc) + ", Minibatch Validation  Loss= " + \
                     "{:.6f}".format(loss_vali) + ", Validation Accuracy= " + \
                     "{:.5f}".format(acc_vali) )
+                TRAIN_ITER_100TIMES_END = time.time() - TRAIN_ITER_100TIMES_START
             step += 1
 
         #Calculate the confusion_matrix
@@ -254,6 +260,7 @@ with tf.Session() as sess:
         plt.legend(["train_loss","validation_loss"],loc=1)
         plt.ylim([0,2])
         plt.savefig((output_folder + "Loss_" + str(i) + ".png"), dpi=150)
+        TRAIN_1KK_END = time.time() - TRAIN_1KK_START
 
     print("Optimization Finished!")
     print("%.1f%% (+/- %.1f%%)" % (np.mean(cvscores), np.std(cvscores)))
@@ -262,3 +269,13 @@ with tf.Session() as sess:
     #Save the confusion_matrix
     np.savetxt(output_folder + "confusion_matrix.txt", confusion_sum, delimiter=",", fmt='%d')
     np.savetxt(output_folder + "accuracy.txt", (np.mean(cvscores), np.std(cvscores)), delimiter=".", fmt='%.1f')
+    FULL_TIME_END = time.time() - FULL_TIME_START
+
+    print("FULL CALCULATE TIME : " , FULL_TIME_END)
+    #time.strftime("%H:%M:%S", FULL_TIME_END)
+    print('100TIMES ITERATION TIME : ' , TRAIN_ITER_100TIMES_END)
+    #time.strftime("%H:%M:%S", TRAIN_ITER_100TIMES_END)
+    print('\n')
+    print("1 KK CALCULATE TIME  ", TRAIN_1KK_END)
+    #time.strftime("%H:%M:%S", TRAIN_1KK_END)
+    print('Finished!!!!')
