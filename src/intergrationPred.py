@@ -43,23 +43,32 @@ while 1:
     xx1 = np.empty([0], float)
     yy1 = np.empty([0], float)
     zz1 = np.empty([0], float)
-    while (k <= 500):
-        csi_entry = csi_trace[t]
-        csi = eng.get_scaled_csi(csi_entry)
-        A = eng.abs(csi)
-        ARR_OUT = np.empty([0], float)
+    try:
+        while (k <= 500):
+            csi_entry = csi_trace[t]
+            try:
+                csi = eng.get_scaled_csi(csi_entry)
+                A = eng.abs(csi)
+                ARR_OUT = np.empty([0], float)
 
-        ARR_OUT = np.concatenate((ARR_OUT, A[0][0]), axis=0)
-        ARR_OUT = np.concatenate((ARR_OUT, A[0][1]), axis=0)
-        ARR_OUT = np.concatenate((ARR_OUT, A[0][2]), axis=0)
+                ARR_OUT = np.concatenate((ARR_OUT, A[0][0]), axis=0)
+                ARR_OUT = np.concatenate((ARR_OUT, A[0][1]), axis=0)
+                ARR_OUT = np.concatenate((ARR_OUT, A[0][2]), axis=0)
 
-        xx1 = np.concatenate((xx1, A[0][0]), axis = 0)
-        yy1 = np.concatenate((yy1, A[0][1]), axis = 0)
-        zz1 = np.concatenate((zz1, A[0][2]), axis = 0)
-        ARR_FINAL = np.vstack((ARR_FINAL, ARR_OUT))
-        k = k + 1
-        t = t + 1
-    xx[0] = ARR_FINAL
+                xx1 = np.concatenate((xx1, A[0][0]), axis = 0)
+                yy1 = np.concatenate((yy1, A[0][1]), axis = 0)
+                zz1 = np.concatenate((zz1, A[0][2]), axis = 0)
+                ARR_FINAL = np.vstack((ARR_FINAL, ARR_OUT))
+                k = k + 1
+                t = t + 1
+            except matlab.engine.MatlabExecutionError:
+                print('MatlabExecutionError occured!!!')
+                break
+        xx[0] = ARR_FINAL
+    except ValueError:
+        print('ValueError occured!!!')
+        continue
+
 
     with tf.Session(config=tf.ConfigProto(log_device_placement=True)) as sess:
         saver.restore(sess, '../model/model.ckpt')
